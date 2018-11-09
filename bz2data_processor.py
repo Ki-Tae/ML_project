@@ -120,12 +120,20 @@ def db_frame_construction(natoms, totalnatoms, totalnmolecule, txt_file_path, ex
     print("all molecule data are now in the data frame.")
     
     """
-    # write the data into .xlsx file
+    should write the date by deviding the data into subset
+        
+        num = 0
+        for i in range(number of the molecule you want to put in one subset):
+            num += natoms[i]
+        
+        subset_db = db_data_frame[0:num]
+        subset_db.to_excel(excel_file_path)
+    remind that the num value is different for every iteration
+    
     print("writing the data into excel file.")
     db_data_frame.to_excel(excel_file_path)
     print("all molecule data has been wriiten in excel file")
     """
-    return db_data_frame
 
 txt_to_excel = input("Do you need to convert txt file to excel file? [y / N]")
 if txt_to_excel == 'y':
