@@ -23,3 +23,5 @@ f.write("%f,\t%f,\t%f,\t%f\n" % (dict2['x'],dict2['y'],dict2['z'],dict2['mu']))
 f.write("%f,\t%f,\t%f,\t%f\n" % (dict3['x'],dict3['y'],dict3['z'],dict3['mu']))
 f.close()
 
+
+
