@@ -30,7 +30,7 @@ bl_table = {
     '7#7' : 1.10,
     '7#8' : 1.06
 } 
-offset = 0.01
+offset = 0.03
 
 def connection_detector(dist, typei, typej, bondlength, offset):
     atom_type = [typei, typej]
@@ -72,8 +72,12 @@ def dict_to_A(molecule_dict, mols):
         for i in range(29):
             for j in range(29):
                 if i == j:
-                    pass
-                if i != j:
+                    # for constructing X
+                    zi = mol[i, 0]
+                    X[i, j] = 0.5*(zi**(2.4))
+
+                elif i != j:
+                    
                     typei = mol[i, 0]
                     xi = mol[i, 1]
                     yi = mol[i, 2]
@@ -88,6 +92,7 @@ def dict_to_A(molecule_dict, mols):
                     positionj = np.array((xj, yj, zj))
                     dist = np.linalg.norm(positioni-positionj)
                     
+                    # for constructing A
                     if (xi, yi, zi) == (0, 0, 0):
                         pass
                     elif (xj, yj, zj) == (0, 0, 0):
@@ -96,8 +101,59 @@ def dict_to_A(molecule_dict, mols):
                         connected = connection_detector(dist=dist, typei=typei, typej=typej,bondlength=bl_table, offset=offset)
                         A[i,j] = connected
                     
-                    
+                    # for constructing X
+                    if (xi, yi, zi) == (0, 0, 0):
+                        pass
+                    elif (xj, yj, zj) == (0, 0, 0):
+                        pass
+                    else:
+                        X[i, j] = (typei*typej)/dist
+                                        
         A_dict['molecule%d' % n] = A
-    return A_dict
+        X_dict['molecule%d' % n] = X
+    return A_dict, X_dict
 
+def dict_to_muX(molecule_dict, mols):
+    muX_dict = {}
+    for n in range(mols):
+
+        mol = molecule_dict['molecule%d' % n]
+        connection_matrix_size = (29,29)
+        muX = np.zeros(connection_matrix_size)
+
+        for i in range(29):
+            for j in range(29):
+                if i == j:
+                    # for constructing muX
+                    mui = mol[i, 4]
+                    muX[i, j] = 0.5*(mui**(2.4))
+
+                elif i != j:
+                    
+                    xi = mol[i, 1]
+                    yi = mol[i, 2]
+                    zi = mol[i, 3]
+                    mui = mol[i, 4]
+                    
+                    xj = mol[j, 1]
+                    yj = mol[j, 2]
+                    zj = mol[j, 3]
+                    muj = mol[j, 4]
+
+                    positioni = np.array((xi, yi, zi))
+                    positionj = np.array((xj, yj, zj))
+                    dist = np.linalg.norm(positioni-positionj)
+
+                    # for constructing muX
+                    if (xi, yi, zi) == (0, 0, 0):
+                        pass
+                    elif (xj, yj, zj) == (0, 0, 0):
+                        pass
+                    else:
+                        muX[i, j] = (mui*muj)/dist                    
+                    
+        muX_dict['molecule%d' % n] = muX
+    return muX_dict
+
+# def saving_dict_to_csv(A_dict, X_dict):
 
