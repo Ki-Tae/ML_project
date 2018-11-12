@@ -60,10 +60,10 @@ def connection_detector(dist, typei, typej, bondlength, offset):
     
     return connected
 
-def dict_to_A(molecule_dict, mols):
+def dict_to_A(molecule_dict, nthsubset):
     A_dict = {}
     X_dict = {}
-    for n in range(mols):
+    for n in range(nthsubset*1000, (nthsubset+1)*1000):
 
         mol = molecule_dict['molecule%d' % n]
         connection_matrix_size = (29,29)
@@ -73,6 +73,8 @@ def dict_to_A(molecule_dict, mols):
         for i in range(29):
             for j in range(29):
                 if i == j:
+                    # for constructing A
+                    A[i, j] = 1
                     # for constructing X
                     zi = mol[i, 0]
                     X[i, j] = 0.5*(zi**(2.4))
@@ -114,9 +116,9 @@ def dict_to_A(molecule_dict, mols):
         X_dict['molecule%d' % n] = X
     return A_dict, X_dict
 
-def dict_to_muX(molecule_dict, mols):
+def dict_to_muX(molecule_dict, nthsubset):
     muX_dict = {}
-    for n in range(mols):
+    for n in range(nthsubset*1000, (nthsubset+1)*1000):
 
         mol = molecule_dict['molecule%d' % n]
         connection_matrix_size = (29,29)
@@ -160,11 +162,19 @@ def saving_dict_to_csv(A_dict, X_dict, nthsubset):
     # writing the A_dict into csv file
     with open('C:\KT_project\dataset\A_subsets\A_dict_subset%d.csv' % nthsubset,'w') as f:
         w = csv.writer(f)
-        w.writerow(somedict.keys())
-        w.writerow(somedict.values())
+        w.writerow(A_dict.keys())
+        w.writerow(A_dict.values())
+    
     # writing the X_dict into csv file 
     with open('C:\KT_project\dataset\X_subsets\X_dict_subset%d.csv' % nthsubset,'w') as f:
         w = csv.writer(f)
-        w.writerow(somedict.keys())
-        w.writerow(somedict.values())
+        w.writerow(X_dict.keys())
+        w.writerow(X_dict.values())
+    """
+    # writing the X_dict into csv file 
+    with open('C:\KT_project\dataset\muX_subsets\muX_dict_subset%d.csv' % nthsubset,'w') as f:
+        w = csv.writer(f)
+        w.writerow(muX_dict.keys())
+        w.writerow(muX_dict.values())
+    """    
 
