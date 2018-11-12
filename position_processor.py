@@ -56,18 +56,7 @@ for i in range(num):
     molecules_dict['molecule%d' % i ] = matrix
     # molecules dictionary for the subset data is achieved
 
-# writing the file into csv
-"""
-with open('C:\KT_project\dataset/molecule_dict.csv', 'w') as f:
-    for i in range(30):
-        f.write("%s, %d, %d, %d, %d, %d\n" %
-        ('molecule%d' % i,
-        molecules_dict['molecule%d' % i][0],
-        molecules_dict['molecule%d' % i][1],
-        molecules_dict['molecule%d' % i][2],
-        molecules_dict['molecule%d' % i][3],
-        molecules_dict['molecule%d' % i][4]))
-"""    
+    
 
     
 

@@ -67,6 +67,7 @@ def db_frame_construction(natoms, totalnatoms, totalnmolecule, txt_file_path, ex
     print("successfully made molecule index column & atom index column!")
     # achieved molecule number column & atom number column
     
+    
     f = open(txt_file_path, 'r')
     lines = f.readlines()
     atom_info = []
@@ -118,27 +119,33 @@ def db_frame_construction(natoms, totalnatoms, totalnmolecule, txt_file_path, ex
         'atom_z_info',
         'atom_mu_info'])
     print("all molecule data are now in the data frame.")
-    
-    """
-    should write the date by deviding the data into subset
-        
-        num = 0
-        for i in range(number of the molecule you want to put in one subset):
-            num += natoms[i]
-        
-        subset_db = db_data_frame[0:num]
-        subset_db.to_excel(excel_file_path)
-    remind that the num value is different for every iteration
-    
-    print("writing the data into excel file.")
-    db_data_frame.to_excel(excel_file_path)
-    print("all molecule data has been wriiten in excel file")
-    """
+    return db_data_frame
+
 
 txt_to_excel = input("Do you need to convert txt file to excel file? [y / N]")
 if txt_to_excel == 'y':
-    atom_info_df = db_frame_construction(natoms,totalnatoms, totalnmolecule, txt_file, excel_file)
+    atom_info_df = db_frame_construction(natoms = natoms ,totalnatoms = totalnatoms, totalnmolecule=totalnmolecule, txt_file_path = txt_file, excel_file_path = excel_file)
+    start_num = 0
+    for i in range(0, 133):
+        num = i * 1000 + 999
+    
+        until_num = atom_info_df.loc[atom_info_df['mol_num']==num].iloc[-1].name + 1
+        istmolecule_db = atom_info_df[int('%d' % start_num) :int('%d' % until_num)]
+        start_num = until_num
+        istmolecule_db.to_excel('subset%d.xlsx' % i)
+        print('%dth data are written in excel file.' % i)
+    last_db = atom_info_df[2395028 : 2407752]
+    last_db.to_excel('subset133.xlsx')
+
 else:
     pass
+
+
+ 
+# atom_info_df.loc[atom_info_df['mol_num'] == 0 ].iloc[0].name
+# start_num = 826208
+# atom_info_df.loc[atom_info_df['mol_num'] == 50000 ].iloc[0].name 이 826208임
+# start_num = 1770778
+# atom_info_df.loc[atom_info_df['mol_num'] == 100000 ].iloc[0].name 
 
 

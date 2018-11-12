@@ -61,11 +61,3 @@ key-value for each atom
 , "energy_U0", "Cv", "enthalpy_H", "free_G", "alpha", "energy_U"
 , "lumo", "zpve"]
 """
-
-# converting positions > to xyz coordinate
-
-# see only 10 rows
-
-system_table_sm = systems_table[0:10]
-print(systems_table_sm)
-print(system_table_sm.info())

@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import csv
 
 bl_table = {
     # single bond
@@ -155,5 +156,15 @@ def dict_to_muX(molecule_dict, mols):
         muX_dict['molecule%d' % n] = muX
     return muX_dict
 
-# def saving_dict_to_csv(A_dict, X_dict):
+def saving_dict_to_csv(A_dict, X_dict, nthsubset):
+    # writing the A_dict into csv file
+    with open('C:\KT_project\dataset\A_subsets\A_dict_subset%d.csv' % nthsubset,'w') as f:
+        w = csv.writer(f)
+        w.writerow(somedict.keys())
+        w.writerow(somedict.values())
+    # writing the X_dict into csv file 
+    with open('C:\KT_project\dataset\X_subsets\X_dict_subset%d.csv' % nthsubset,'w') as f:
+        w = csv.writer(f)
+        w.writerow(somedict.keys())
+        w.writerow(somedict.values())
 
