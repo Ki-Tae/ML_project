@@ -35,13 +35,21 @@ x = layer_sum(x)
 # combining all 
 E_pred = get_sum_of_x(x, 29)
 
-# Loss
-loss = tf.losses.mean_squared_error(labels = E_)
 
-sess = tf.Session()
-init = tf.global_variables_initializer()
-sess.run(init)
+def my_model(E_true, E_pred, learning_rate, iteration):
+    # Loss / Optimizer
+    loss = tf.losses.mean_squared_error(labels = E_true, predictions = E_pred)
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate)
+    train = optimizer.minimize(loss=loss)
+    init = tf.global_variables_initializer
 
+    with tf.Session() as sess:
+        sess.run(init)
+        for i in range(iteration):
+            _, loss_value = sess.run((train, loss))
+            print(loss_value)
+        
+        print(sess.run(E_pred))
 
 
 def get_sum_of_x(x, shape):
