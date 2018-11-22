@@ -10,7 +10,7 @@ max_epoch = 1000
 Define dummy input/output.
 """
 size_input = 29
-num_molecules = 1000
+num_molecules = 100
 # dummy_input = 2*np.random.random([size_input, size_input*num_molecules])-1
 # dummy_output = np.random.random([num_molecules])*29
 AXE_file_path = "C:\KT_project\dataset\AXE_dict_subset\AXE_dict_subset0.pickle"
@@ -23,18 +23,21 @@ Define model.
 In tensorflow/keras, dimension of input matrix is [# of samples(atoms), # of features]
 Thus, we need to transpose the dummy_input.
 """
-inputs = tf.keras.Input(shape=(2, size_input, size_input))
-A = inputs[0]
-x = inputs[1]
+inputs = tf.keras.Input(shape=(size_input, size_input))
+A = tf.keras.Input(shape=(size_input, size_input))
+x = inputs
+print(A.shape)
+print(x.shape)
 outputs = tf.placeholder(tf.float32, [None, 1])
+print(outputs.shape)
 # 1st layer
-x = np.matmul(A, x)
+x = tf.matmul(A, x)
 x = tf.keras.layers.Dense(30, activation='sigmoid', kernel_initializer=tf.initializers.truncated_normal(0.3, dtype=tf.float32))(x)
 # 2nd layer
-x = np.matmul(A, x)
+x = tf.matmul(A, x)
 x = tf.keras.layers.Dense(60, activation='sigmoid')(x)
 # 3rd layer
-x = np.matmul(A, x)
+x = tf.matmul(A, x)
 x = tf.keras.layers.Dense(30, activation='sigmoid')(x)
 predictions = tf.keras.layers.Dense(1, activation='sigmoid')(x)
 print(predictions)
@@ -69,11 +72,18 @@ with tf.Session() as sess:
     # tb_hist = keras.callbacks.TensorBoard(log_dir='C:\KT_project\gcn\model\hist', histogram_freq=0, write_graph=True, write_images=True)
     for epoch in range(max_epoch):
         # minimize.run(feed_dict={inputs:np.transpose(dummy_input), outputs:dummy_output.reshape([-1,1])})
-        ran_num = randint(0,999)
-        
-        minimize.run(feed_dict={inputs: input_array_list[ran_num], outputs: E_outputs[ran_num]})
+        ran_num = randint(0,num_molecules-1)
+        A_matrix = input_array_list[ran_num][0]
+        print(type(A_matrix))
+        print(A_matrix.shape)
+        inputs = input_array_list[ran_num][1]
+        print(type(inputs))
+        print(inputs.shape)
+        outputs = np.float32(E_outputs[ran_num])
+        print(type(outputs))
+        minimize.run(feed_dict={inputs: inputs, A: A_matrix, outputs: outputs})
         if (epoch+1) % 100 == 0:
             # show loss for every 100th epoch
             # print(epoch+1, sess.run(loss, feed_dict={inputs:np.transpose(dummy_input), outputs:dummy_output.reshape([-1,1])}))
-            print(epoch+1, sess.run(loss, feed_dict={inputs: input_array_list[ran_num], outputs: E_outputs[ran_num]}))
+            print(epoch+1, sess.run(loss, feed_dict={inputs: inputs, A: A_matrix, outputs: outputs}))
 
