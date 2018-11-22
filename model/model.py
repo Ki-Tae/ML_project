@@ -14,7 +14,7 @@ num_molecules = 10
 # dummy_output = np.random.random([num_molecules])*29
 AXE_file_path = "C:\KT_project\dataset\AXE_dict_subset\AXE_dict_subset0.pickle"
 AXE_dict_subset = load_dict(AXE_file_path = AXE_file_path)
-X_inputs, E_outputs = convert_to_inputs_outputs(AXE_dict_subset=AXE_dict_subset, molecule_num=num_molecules)
+A, X_inputs, E_outputs = convert_to_inputs_outputs(AXE_dict_subset=AXE_dict_subset, molecule_num=num_molecules)
 
 
 """
@@ -22,14 +22,16 @@ Define model.
 In tensorflow/keras, dimension of input matrix is [# of samples(atoms), # of features]
 Thus, we need to transpose the dummy_input.
 """
-inputs = tf.keras.Input(shape=(size_input,size_input))
+inputs = tf.keras.Input(shape=(size_input,size_input, ))
 outputs = tf.placeholder(tf.float32, [None, 1])
 # 1st layer
-x = tf.keras.layers.Dense(30, activation='sigmoid', kernel_initializer=tf.initializers.truncated_normal(0.3, dtype=tf.float32))(inputs)
-# insert A
-
+x = np.matmul(A, inputs)
+x = tf.keras.layers.Dense(30, activation='sigmoid', kernel_initializer=tf.initializers.truncated_normal(0.3, dtype=tf.float32))(x)
+# 2nd layer
+x = np.matmul(A, x)
 x = tf.keras.layers.Dense(60, activation='sigmoid')(x)
-# insert A
+# 3rd layer
+x = np.matmul(A, x)
 x = tf.keras.layers.Dense(30, activation='sigmoid')(x)
 predictions = tf.keras.layers.Dense(1, activation='sigmoid')(x)
 print(predictions)
@@ -49,7 +51,7 @@ After defining the neural network output,
 we use tensorflow to set loss function and train the model.
 """
 loss = tf.losses.mean_squared_error(labels = outputs, predictions = predictions)
-optim = tf.train.AdamOptimizer(learning_rate=0.01)
+optim = tf.train.AdamOptimizer(learning_rate=0.1)
 #optim = tf.train.RMSPropOptimizer(learning_rate=0.01)
 #optim = tf.train.GradientDescentOptimizer(learning_rate=0.01)
 minimize = optim.minimize(loss)

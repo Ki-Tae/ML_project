@@ -20,18 +20,23 @@ def load_dict(AXE_file_path):
 def convert_to_inputs_outputs(AXE_dict_subset, molecule_num):
     input_x = []
     output_x = []
+    A = []
     for i in range(molecule_num):
+        A.append(AXE_dict_subset['molecule{}'.format(i)][0])
         input_x.append(AXE_dict_subset['molecule{}'.format(i)][1])
         output_x.append(AXE_dict_subset['molecule{}'.format(i)][2])
         
-    # input_x = np.asarray(input_x)
+    A = np.asarray(A)
+    # A shape (molecule_num, 29,29)
+
+    input_x = np.asarray(input_x)
     # input shape (molecule_num, 29, 29)
-    input_x = np.swapaxes(input_x, 0, 2)
+    # input_x = np.swapaxes(input_x, 0, 2)
     # input shape (29,29, molecule_num)
 
     output_x = np.asarray(output_x)
-    # output shape (molecule_num, ) is gained
-    return input_x, output_x
+    # output shape (molecule_num, )
+    return A, input_x, output_x
 
 
 
