@@ -17,26 +17,22 @@ def load_dict(AXE_file_path):
 
     return AXE_dict_subset
 
-def convert_to_inputs_outputs(AXE_dict_subset, molecule_num):
-    input_x = []
-    output_x = []
-    A = []
+def convert_to_inputs_outputs(AXE_dict_subset, molecule_num, subset_num):
+    input_array_list = []
+    output_E_list = []
+
     for i in range(molecule_num):
-        A.append(AXE_dict_subset['molecule{}'.format(i)][0])
-        input_x.append(AXE_dict_subset['molecule{}'.format(i)][1])
-        output_x.append(AXE_dict_subset['molecule{}'.format(i)][2])
+        input_array = [
+            AXE_dict_subset['molecule{}'.format(subset_num*1000 + i)][0],
+            AXE_dict_subset['molecule{}'.format(subset_num*1000 + i)][1]
+        ]
+        input_array = np.asarray(input_array)
+        # input_array's shape is (2,29,29)
+
+        input_array_list.append(input_array)
+        output_E_list.append(AXE_dict_subset['molecule{}'.format(subset_num*1000 + i)][2])
         
-    A = np.asarray(A)
-    # A shape (molecule_num, 29,29)
-
-    input_x = np.asarray(input_x)
-    # input shape (molecule_num, 29, 29)
-    # input_x = np.swapaxes(input_x, 0, 2)
-    # input shape (29,29, molecule_num)
-
-    output_x = np.asarray(output_x)
-    # output shape (molecule_num, )
-    return A, input_x, output_x
+    return input_array_list, output_E_list
 
 
 
