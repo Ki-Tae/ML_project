@@ -7,12 +7,10 @@ from random import randint
 max_epoch = 10000
 
 """
-Define dummy input/output.
+Define input/output.
 """
 size_input = 29
 num_molecules = 1000
-# dummy_input = 2*np.random.random([size_input, size_input*num_molecules])-1
-# dummy_output = np.random.random([num_molecules])*29
 AXE_file_path = "C:\KT_project\dataset\AXE_dict_subset\AXE_dict_subset0.pickle"
 AXE_dict_subset = load_dict(AXE_file_path = AXE_file_path)
 results = convert_to_inputs_outputs(AXE_dict_subset=AXE_dict_subset, molecule_num=num_molecules, subset_num=0)
@@ -76,9 +74,8 @@ with tf.Session() as sess:
     merged_summary=tf.summary.merge_all()
     writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\2")
     writer.add_graph(sess.graph)
-    # tb_hist = keras.callbacks.TensorBoard(log_dir='C:\KT_project\gcn\model\hist', histogram_freq=0, write_graph=True, write_images=True)
+    # code above writes the graph in tensorboard
     for epoch in range(max_epoch):
-        # minimize.run(feed_dict={inputs:np.transpose(dummy_input), outputs:dummy_output.reshape([-1,1])})
         ran_num = randint(0,num_molecules-1)
         A_matrix = A_array_list[ran_num]
         X_matrix = X_array_list[ran_num]
@@ -90,6 +87,6 @@ with tf.Session() as sess:
             # print(epoch+1, sess.run(loss, feed_dict={inputs: X_matrix, A: A_matrix, outputs: E}))
             s = sess.run(merged_summary, feed_dict={inputs: X_matrix, A: A_matrix, outputs: E})
             writer.add_summary(s, epoch+1)
-
+            # code above writes summary of the session and writes to the disk.
 
 # model 학습과정 표시하기
