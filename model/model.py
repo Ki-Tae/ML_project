@@ -4,7 +4,7 @@ import keras
 from model_data import load_dict, convert_to_inputs_outputs
 from random import randint
 
-max_epoch = 10000
+max_epoch = 20000
 
 """
 Define input/output.
@@ -33,14 +33,14 @@ outputs = tf.placeholder(tf.float32, [None, 1], name="Output_layer")
 print(outputs.shape)
 # 1st layer
 x = tf.matmul(A, inputs, name="op_1")
-x = tf.keras.layers.Dense(30, activation='relu', kernel_initializer=tf.initializers.truncated_normal(0.3, dtype=tf.float32), name="layer1")(x)
+x = tf.keras.layers.Dense(30, activation='relu', kernel_initializer=tf.initializers.he_normal(seed=1), name="layer1")(x)
 # 2nd layer
 x = tf.matmul(A, x, name="op_2")
-x = tf.keras.layers.Dense(60, activation='relu', name="layer2")(x)
+x = tf.keras.layers.Dense(60, activation='relu', kernel_initializer=tf.initializers.he_normal(seed=1), name="layer2")(x)
 # 3rd layer
 x = tf.matmul(A, x, name="op_3")
-x = tf.keras.layers.Dense(30, activation='relu', name="layer3")(x)
-predictions = tf.keras.layers.Dense(1, activation='sigmoid', name="layer4")(x)
+x = tf.keras.layers.Dense(30, activation='relu', kernel_initializer=tf.initializers.he_normal(seed=1), name="layer3")(x)
+predictions = tf.keras.layers.Dense(1, activation='sigmoid', kernel_initializer=tf.initializers.variance_scaling(scale=1.0), name="layer4")(x)
 print(predictions)
 
 """
@@ -61,7 +61,7 @@ we use tensorflow to set loss function and train the model.
 loss = tf.losses.mean_squared_error(labels = outputs, predictions = predictions)
 tf.summary.scalar('loss', loss)
 with tf.name_scope("train"):
-    optim = tf.train.AdamOptimizer(learning_rate=0.001)
+    optim = tf.train.AdamOptimizer(learning_rate=0.00001)
     #optim = tf.train.RMSPropOptimizer(learning_rate=0.01)
     #optim = tf.train.GradientDescentOptimizer(learning_rate=0.01)
     minimize = optim.minimize(loss)
@@ -72,7 +72,7 @@ with tf.Session() as sess:
     # before training, we need to initialize the variables(=weights)
     sess.run(tf.global_variables_initializer())
     merged_summary=tf.summary.merge_all()
-    writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\2")
+    writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\6")
     writer.add_graph(sess.graph)
     # code above writes the graph in tensorboard
     for epoch in range(max_epoch):
