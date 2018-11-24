@@ -29,9 +29,14 @@ bl_table = {
     '6#7' : 1.15,
     '6#8' : 1.13,
     '7#7' : 1.10,
-    '7#8' : 1.06
+    '7#8' : 1.06,
+    # ring bond
+    '6~6' : 1.38,
+    '6~7' : 1.33,
+    '7~7' : 1.37
+    
 } 
-offset = 0.03
+offset = 0.12
 
 def connection_detector(dist, typei, typej, bondlength, offset):
     atom_type = [typei, typej]
@@ -55,14 +60,20 @@ def connection_detector(dist, typei, typej, bondlength, offset):
             # if triple-bonded
             else:
                 pass
+        elif '%d~%d' % (atom_type[0], atom_type[1]) in bondlength:
+            if bondlength['%d~%d' % (atom_type[0], atom_type[1])] - offset <= dist <= bondlength['%d~%d' % (atom_type[0], atom_type[1])] + offset:
+                connected = 1
+            # if resonance
+            else:
+                pass
         else:
             pass
     
     return connected
 
-def dict_to_A(molecule_dict, nthsubset):
-    A_dict = {}
-    X_dict = {}
+def dict_to_AXEN(molecule_dict, outputs, mol_num_dict, nthsubset):
+    AXEN_dict = {}
+    
     for n in range(nthsubset*1000, (nthsubset+1)*1000):
 
         mol = molecule_dict['molecule%d' % n]
@@ -111,10 +122,10 @@ def dict_to_A(molecule_dict, nthsubset):
                         pass
                     else:
                         X[i, j] = (typei*typej)/dist
-                                        
-        A_dict['molecule%d' % n] = A
-        X_dict['molecule%d' % n] = X
-    return A_dict, X_dict
+        E = outputs['molecule%d' % n]
+        N = mol_num_dict['molecule%d' % n]
+        AXEN_dict['molecule%d' % n] = [A, X, E, N]                                
+    return AXEN_dict
 
 def dict_to_muX(molecule_dict, nthsubset):
     muX_dict = {}
@@ -178,3 +189,7 @@ def saving_dict_to_csv(A_dict, X_dict, nthsubset):
         w.writerow(muX_dict.values())
     """    
 
+def saving_dict_to_pickle(AXEN_dict, nthsubset):
+    with open('C:\KT_project\dataset\AXEN_dict_subset\AXEN_dict_subset%d.pickle' % nthsubset,'wb') as handle:
+        pickle.dump(AXEN_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    

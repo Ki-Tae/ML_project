@@ -1,6 +1,7 @@
 import logging
 import sqlite3
 import pandas as pd
+import pickle
 
 logging.info("Accessing the database...")
 # designating db file path
@@ -61,3 +62,25 @@ key-value for each atom
 , "energy_U0", "Cv", "enthalpy_H", "free_G", "alpha", "energy_U"
 , "lumo", "zpve"]
 """
+
+
+molecule_energy_dict = {}
+for i in range(133885):
+        d = molecule_table['key_value_pairs'][i]
+        d = eval(molecule_table['key_value_pairs'][i])
+        molecule_energy_dict['molecule{}'.format(i)] = d['energy_U0']
+        molecule_Cv_dict['molecule{}'.format(i)] = d['Cv']
+        molecule_enthalpy_dict['molecule{}'.format(i)] = d['enthalpy_H']
+        molecule_free_G_dict['molecule{}'.format(i)] = d['free_G']
+
+with open('C:\KT_project\dataset\output_values\molecule_U0_dict.pickle','wb') as handle:
+        pickle.dump(molecule_energy_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+with open('C:\KT_project\dataset\output_values\molecule_Cv_dict.pickle','wb') as handle:
+        pickle.dump(molecule_Cv_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+with open('C:\KT_project\dataset\output_values\molecule_enthalpy_dict.pickle','wb') as handle:
+        pickle.dump(molecule_enthalpy_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+with open('C:\KT_project\dataset\output_values\molecule_free_G_dict.pickle','wb') as handle:
+        pickle.dump(molecule_free_G_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from molecule_dict_to_A import dict_to_A, dict_to_muX, saving_dict_to_csv
+import pickle
+from molecule_dict_to_A import dict_to_AXEN, dict_to_muX, saving_dict_to_csv, saving_dict_to_pickle
 
 # coverting x,y,z position to distance vector (adjacency vector)
 
@@ -57,22 +58,35 @@ saving_dict_to_csv(A_dict=A_dict, X_dict=X_dict, nthsubset = 0)
 # excel_file = 'C:\KT_project\dataset\\raw_subset\subset0.xlsx'
 # data = pd.read_excel(excel_file)
 
-def altering_nth_subset_to_A_X(excel_data, nthsubset):
+def altering_nth_subset_to_A_X(excel_data, outputs, mol_num_dict, nthsubset):
     molecules_dict={}
     for i in range(num):
-        matrix = molecule_info_matrix(excel_data = excel_data, converting_table = converting_table, n=i)
+        matrix = molecule_info_matrix(excel_data = excel_data, converting_table = converting_table, n=(nthsubset*1000 + i))
         molecules_dict['molecule%d' % (nthsubset*1000 + i)] = matrix
         # molecules dictionary for the subset data is achieved
     print("molecules dictionary for subset%d is obtained" % nthsubset)
 
     # muX_dict = dict_to_muX(molecule_dict = molecules_dict, nthsubset = nthsubset)    
-    A_dict, X_dict = dict_to_A(molecule_dict = molecules_dict, nthsubset = nthsubset)
-    saving_dict_to_csv(A_dict=A_dict, X_dict=X_dict, nthsubset = nthsubset)
+    AXEN_dict = dict_to_AXEN(molecule_dict = molecules_dict, outputs=outputs, mol_num_dict=mol_num_dict, nthsubset = nthsubset)
+    # saving_dict_to_csv(A_dict=A_dict, X_dict=X_dict, nthsubset = nthsubset)
+    saving_dict_to_pickle(AXEN_dict = AXEN_dict, nthsubset = nthsubset)
 
-for subsetnum in range(1,2):
+
+# temporarilly blocked
+
+
+output_file = "C:\KT_project\dataset\output_values\molecule_U0_dict.pickle"
+mol_num_file = "C:\KT_project\dataset\molecule_num.pickle"
+with open(output_file, "rb") as handler:
+    outputs_dict = pickle.load(handler)
+
+with open(mol_num_file, "rb") as handler:
+    mol_num_dict = pickle.load(handler)
+
+for subsetnum in range(0,2):
     excel_file = 'C:\KT_project\dataset\\raw_subset\subset%d.xlsx' % subsetnum
     data = pd.read_excel(excel_file)
-    altering_nth_subset_to_A_X(excel_data = data, nthsubset = subsetnum)
-    print("subset%d now converted to A, X data." % subsetnum)
+    altering_nth_subset_to_A_X(excel_data = data, outputs=outputs_dict, mol_num_dict = mol_num_dict, nthsubset = subsetnum)
+    print("subset%d now converted to A, X, E, N data." % subsetnum)
 
 
