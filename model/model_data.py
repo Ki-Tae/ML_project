@@ -6,25 +6,22 @@ import pickle
 each X are normalized differently.
 """
 
-max_X = 9**2.4/2*841
-Ha_to_ev = 1000
 """
-
 max U0 ['molecule0'] = -1101.4877900833399
 min U0 ['molecule133620'] = -19444.3873485546
-
 """
 minE = 1101.4877900833399
 maxE = 19444.3873485546
 maxX = 0.5*9**2.4
 
+min_muX = -0.5
+max_muX = 0.5
 
+def load_dict(file_path):
+    with open(file_path, 'rb') as f:
+        dict_subset = pickle.load(f)
 
-def load_dict(AXEN_file_path):
-    with open(AXEN_file_path, 'rb') as f:
-        AXEN_dict_subset = pickle.load(f)
-
-    return AXEN_dict_subset
+    return dict_subset
 
 def convert_to_inputs_outputs(AXEN_dict_subset, molecule_num, subset_num):
     A_array_list = []
@@ -86,3 +83,39 @@ def convert_to_inputs_outputs(AXEN_dict_subset, molecule_num, subset_num):
     }
 
     return  result
+
+def convert_to_muX(AXEN_dict_subset, muX_dict_subset, molecule_num, subset_num):
+    muX_array_list = []
+    
+    for i in range(molecule_num):
+        
+        N = AXEN_dict_subset['molecule{}'.format(subset_num*1000 + i)][3]
+        
+        # muX normalisation
+        muX = muX_dict_subset['molecule{}'.format(subset_num*1000 + i)]
+        muX = muX/N**2
+        # max_muX - min_muX = 1
+        muX_array = [
+            muX
+        ]
+        muX_array = np.asarray(muX_array, object)
+        # muX_array's shape is (1,29,29)
+
+        muX_array_list.append(muX_array)
+    
+    return  muX_array_list
+
+def convert_to_invarient_X(AXEN_dict_subset, molecule_num, subset_num):
+    inv_X_array_list = []
+
+    for i in range(molecule_num):
+        # making X invarient
+        
+        X = AXEN_dict_subset['molecule{}'.format(subset_num*1000 + i)][1]
+        
+        X = X/maxX/N**2
+        X_array = [
+            X
+        ]
+        X_array = np.asarray(X_array)
+        # X_array's shape is (1,29,29)

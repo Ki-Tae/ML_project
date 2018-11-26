@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import keras
-from model_data import load_dict, convert_to_inputs_outputs
+from model_data import load_dict, convert_to_inputs_outputs, convert_to_muX
 from random import randint
 
 max_epoch = 10000
@@ -9,15 +9,24 @@ max_epoch = 10000
 """
 Define input/output.
 """
+
 size_input = 29
 num_molecules = 1000
+
 AXEN_file_path = "C:\KT_project\dataset\AXEN_dict_subset\AXEN_dict_subset0.pickle"
-AXEN_dict_subset = load_dict(AXEN_file_path = AXEN_file_path)
+AXEN_dict_subset = load_dict(file_path = AXEN_file_path)
+
+# muX_file_path = "C:\KT_project\dataset\muX_subsets\muX_dict_subset0.pickle"
+# muX_dict_subset = load_dict(file_path = muX_file_path)
+
 results = convert_to_inputs_outputs(AXEN_dict_subset=AXEN_dict_subset, molecule_num=num_molecules, subset_num=0)
 A_array_list = results['A']
 X_array_list = results['X']
 output_E_list = results['E']
 atom_num_list = results['N']
+
+# muX_array_list = convert_to_muX(AXEN_dict_subset=AXEN_dict_subset, muX_dict_subset=muX_dict_subset, molecule_num=num_molecules, subset_num=0)
+
 print("inputs and outputs are converted.")
 
 
@@ -70,7 +79,6 @@ tf.summary.scalar('loss_adam', loss_adam)
 
 with tf.name_scope("train"):
     optim1 = tf.train.AdamOptimizer(learning_rate=0.0001)
-
     minimize1 = optim1.minimize(loss_adam)
 
     
@@ -79,7 +87,7 @@ with tf.Session() as sess:
     # before training, we need to initialize the variables(=weights)
     sess.run(tf.global_variables_initializer())
     merged_summary=tf.summary.merge_all()
-    writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\after_normalisation")
+    writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\lr00001")
     writer.add_graph(sess.graph)
     # code above writes the graph in tensorboard
     for epoch in range(max_epoch):
@@ -87,17 +95,20 @@ with tf.Session() as sess:
         A_matrix = A_array_list[ran_num]
         X_matrix = X_array_list[ran_num]
         E = output_E_list[ran_num]
-        
+        # muX_matrix = muX_array_list[ran_num]
         minimize1.run(feed_dict={inputs: X_matrix, A: A_matrix, outputs: E})
+        # minimize1.run(feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E})
         
         # 
         if epoch == 0:
             print(epoch+1, sess.run(loss_adam, feed_dict={inputs: X_matrix, A: A_matrix, outputs: E}))
+            # print(epoch+1, sess.run(loss_adam, feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E}))
 
         if (epoch+1) % 100 == 0:
             # show loss for every 100th epoch
             # print(epoch+1, sess.run(loss_adam, feed_dict={inputs: X_matrix, A: A_matrix, outputs: E}))
             s = sess.run(merged_summary, feed_dict={inputs: X_matrix, A: A_matrix, outputs: E})
+            # s = sess.run(merged_summary, feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E})
             writer.add_summary(s, epoch+1)
             # code above writes summary of the session and writes to the disk.
 
