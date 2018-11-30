@@ -1,10 +1,11 @@
+import os
 import numpy as np
 import tensorflow as tf
 import keras
-from model_data import load_dict, convert_to_inputs_outputs, convert_to_muX, split_data_set
+from model_data import load_dict, convert_to_inputs_outputs, convert_to_muX, split_data_set, train_saver
 from random import randint
 
-max_epoch = 5000
+max_epoch = 3000
 
 """
 Define input/output.
@@ -35,6 +36,9 @@ A_valid = split_results['A_valid']
 X_valid = split_results['X_valid']
 E_valid = split_results['E_valid']
 
+A_test = split_results['A_test']
+X_test = split_results['X_test']
+E_test = split_results['E_test']
 # A_array_list = results['A']
 # X_array_list = results['X']
 # output_E_list = results['E']
@@ -91,48 +95,89 @@ with tf.name_scope("train"):
 #     optim1 = tf.train.AdamOptimizer(learning_rate=0.0001)
 #     minimize1 = optim1.minimize(loss_adam)
 
-    
+# saver
+"""
+SAVER_DIR = "model"
+saver = tf.train.Saver(max_to_keep=3)
+checkpoint_path = os.path.join(SAVER_DIR, "model")
+ckpt = tf.train.get_checkpoint_state(SAVER_DIR)
+"""
+SAVER_DIR ="C:\KT_project\gcn\model\model_chkp\\"
+# saver = train_saver()
+saver = tf.train.Saver(max_to_keep=2)
+# this saver keeps latest 30 ckpts 
+# ckpt = tf.train.get_checkpoint_state(SAVER_DIR, latest_filename="model")
+
+
 # To start tensorflow, we open the tensorflow session
 with tf.Session() as sess:
     # before training, we need to initialize the variables(=weights)
     sess.run(tf.global_variables_initializer())
-    merged_summary=tf.summary.merge_all()
-    writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\with_validation5")
-    writer.add_graph(sess.graph)
+    
+    ask_run_test = input("Do you want to run the test? [Y/n]")
+
+    if ask_run_test == "Y":
+
+        saver = tf.train.import_meta_graph('C:\KT_project\gcn\model\model_chkp\-3000.meta')
+        saver.restore(sess, save_path='C:\\KT_project\\gcn\\model\\model_chkp\\-3000')
+        loss_test_list = []
+        for i in range(test_set_size):
+            X_ts_matrix = X_test[i]
+            A_ts_matrix = A_test[i]
+            E_ts = E_test[i]
+            loss_test = sess.run(loss_adam_val, feed_dict={inputs: X_ts_matrix, A: A_ts_matrix, outputs: E_ts})
+            loss_test_list.append(loss_test)
+
+        loss_test_value = sum(loss_test_list)/len(loss_test_list)
+        print("Loss for train set data is {}".format(loss_test_value))
+
+    # merged_summary=tf.summary.merge_all()
+    # writer = tf.summary.FileWriter("C:\KT_project\gcn\model\hist\\with_validation")
+    # writer.add_graph(sess.graph)
     # code above writes the graph in tensorboard
-    for epoch in range(max_epoch):
-        ran_num = randint(0,train_set_size-1)
-        A_tr_matrix = A_train[ran_num]
-        X_tr_matrix = X_train[ran_num]
-        E_tr = E_train[ran_num]
-        # muX_matrix = muX_array_list[ran_num]
-        minimize1.run(feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr})
-        # train only occurs here :D
+
+    ask_run_train = input("Train? [Y/n]")
+    if ask_run_train == "Y":    
+        for epoch in range(max_epoch):
+            ran_num = randint(0,train_set_size-1)
+            A_tr_matrix = A_train[ran_num]
+            X_tr_matrix = X_train[ran_num]
+            E_tr = E_train[ran_num]
+            # muX_matrix = muX_array_list[ran_num]
+            minimize1.run(feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr})
+            # train only occurs here :D
+            
+            if epoch == 0:
+                print(epoch+1, sess.run(loss_adam, feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr}))
+                val_ran_num = randint(0,valid_set_size-1)
+                A_val_matrix = A_valid[val_ran_num]
+                X_val_matrix = X_valid[val_ran_num]
+                E_val = E_valid[val_ran_num]
+                print(epoch+1, sess.run(loss_adam_val, feed_dict={inputs: X_val_matrix, A: A_val_matrix, outputs: E_val}))
+                
+                # print(epoch+1, sess.run(loss_adam, feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E}))
+
+            if (epoch+1) % 100 == 0:
+                # show loss for every 100th epoch
+                # below saves the model weights and etc.
+                saver.save(sess, save_path = SAVER_DIR, global_step = epoch + 1)
+                print(epoch+1, sess.run(loss_adam, feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr}))
+                # below process is for achieving the validation data set loss.
+                loss_adam_val_list = []
+                for val_num in range(valid_set_size):
+                    A_val_matrix = A_valid[val_num]
+                    X_val_matrix = X_valid[val_num]
+                    E_val = E_valid[val_num]
+                    loss_val = sess.run(loss_adam_val, feed_dict={inputs: X_val_matrix, A: A_val_matrix, outputs: E_val})
+                    loss_adam_val_list.append(loss_val)
+                loss_adam_val_value = sum(loss_adam_val_list)/len(loss_adam_val_list)
+                print(epoch+1, loss_adam_val_value)
+                
+                # s_train = sess.run(merged_summary, feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr})
+                # s_valid = sess.run(merged_summary, feed_dict={inputs: X_val_matrix, A: A_val_matrix, outputs: E_val})
+                # s = sess.run(merged_summary, feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E})
+                
+                # write summary into tensorboard
+                # writer.add_summary(s_train, epoch+1)
+                # writer.add_summary(s_valid, epoch+1)
         
-        if epoch == 0:
-            print(epoch+1, sess.run(loss_adam, feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr}))
-            val_ran_num = randint(0,valid_set_size-1)
-            A_val_matrix = A_valid[val_ran_num]
-            X_val_matrix = X_valid[val_ran_num]
-            E_val = E_valid[val_ran_num]
-            print(epoch+1, sess.run(loss_adam_val, feed_dict={inputs: X_val_matrix, A: A_val_matrix, outputs: E_val}))
-            
-            # print(epoch+1, sess.run(loss_adam, feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E}))
-
-        if (epoch+1) % 100 == 0:
-            # show loss for every 100th epoch
-            val_ran_num = randint(0,valid_set_size-1)
-            A_val_matrix = A_valid[val_ran_num]
-            X_val_matrix = X_valid[val_ran_num]
-            E_val = E_valid[val_ran_num]
-
-            print(epoch+1, sess.run(loss_adam, feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr}))
-            print(epoch+1, sess.run(loss_adam_val, feed_dict={inputs: X_val_matrix, A: A_val_matrix, outputs: E_val}))
-            
-            s_train = sess.run(merged_summary, feed_dict={inputs: X_tr_matrix, A: A_tr_matrix, outputs: E_tr})
-            s_valid = sess.run(merged_summary, feed_dict={inputs: X_val_matrix, A: A_val_matrix, outputs: E_val})
-            # s = sess.run(merged_summary, feed_dict={inputs: muX_matrix, A: A_matrix, outputs: E})
-            
-            # write summary into tensorboard
-            writer.add_summary(s_train, epoch+1)
-            writer.add_summary(s_valid, epoch+1)
